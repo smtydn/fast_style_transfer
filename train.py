@@ -1,5 +1,5 @@
-import time
 import os
+from datetime import datetime
 
 import tensorflow as tf
 import numpy as np
@@ -26,6 +26,7 @@ LEARNING_RATE = 1e-3
 EPOCHS = 1
 TRAIN_DATASET_PATH = "D:\\Datasets\\test"
 WEIGHT_SAVE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\weights'
+LOG_PER_BATCH = 1
 
 # define dummy loss
 dummy_loss = lambda y_true, y_pred: y_pred
@@ -57,11 +58,13 @@ train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
 dummy_in = utils.expand_input(BATCH_SIZE, np.array([0.0]))
 c_loss = None
 
+start_time = datetime.now()
+print(f'Started at: {start_time}')
 for e in range(1, EPOCHS + 1):
     print("Epoch: %d" % (e))
+    batch_num = 1
 
-    for batch_num, batch in enumerate(train_dataset):
-        t1 = time.time()
+    for batch in train_dataset:
         x = vgg16.preprocess_input(batch)
         content_act = utils.get_vgg_activation(CONTENT_LAYER, WIDTH, HEIGHT)([x])[0]
 
@@ -71,19 +74,25 @@ for e in range(1, EPOCHS + 1):
             epochs=1, verbose=0, batch_size=BATCH_SIZE
         )
 
-        if batch_num % 1 == 0:
+        if batch_num % LOG_PER_BATCH == 0:
             loss = res.history['loss'][0]
-            print('Batch: %d, Loss: %.0f' % (batch_num, loss))
-        if batch_num % 100 == 0:
-            break
+            print(f'Batch: {batch_num}\tLoss: {loss}')
+
+        batch_num += 1
 
 # Saving models
-print("Saving models...")
+print("Saving the model...")
 model_eval = models.image_transform_network(WIDTH, HEIGHT)
 training_model_layers = {layer.name: layer for layer in model.layers}
 for layer in model_eval.layers:
     if layer.name in training_model_layers:
         layer.set_weights(training_model_layers[layer.name].get_weights())
 
-model_eval.save_weights(os.path.join(WEIGHT_SAVE_PATH, f'{STYLE_IMAGE_NAME}.h5'))
-print('Model has saved!')
+model_save_path = os.path.join(WEIGHT_SAVE_PATH, f'{STYLE_IMAGE_NAME}.h5')
+model_eval.save_weights(model_save_path)
+print(f'Model has saved! Path: {model_save_path}')
+
+# Print end time
+end_time = datetime.now()
+print(f"Finished at: {end_time}")
+print(f'Total execution time: {end_time - start_time}')
