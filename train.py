@@ -5,13 +5,12 @@ import tensorflow as tf
 import numpy as np
 import keras
 from keras.applications import vgg16
-from imageio
 
 import models
 import utils
 
 tf.config.run_functions_eagerly(True)
-
+AUTOTUNE = tf.data.AUTOTUNE
 
 WIDTH = 256
 HEIGHT = 256
@@ -26,7 +25,7 @@ TV_WEIGHT = 2e2
 LEARNING_RATE = 1e-3 
 EPOCHS = 1
 TRAIN_DATASET_PATH = "D:\\Datasets\\test"
-MODEL_SAVE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\models'
+WEIGHT_SAVE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\weights'
 
 # define dummy loss
 dummy_loss = lambda y_true, y_pred: y_pred
@@ -48,14 +47,20 @@ model.compile(
 
 
 # prepare for training
-dg = keras.preprocessing.image.ImageDataGenerator()
+train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+    directory=TRAIN_DATASET_PATH,
+    batch_size=BATCH_SIZE,
+    image_size=(HEIGHT, WIDTH),
+    shuffle=True,
+    label_mode=None
+).prefetch(buffer_size=AUTOTUNE)
 dummy_in = utils.expand_input(BATCH_SIZE, np.array([0.0]))
 c_loss = None
 
 for e in range(1, EPOCHS + 1):
     print("Epoch: %d" % (e))
 
-    for batch_num, batch in enumerate(dg.flow_from_directory(TRAIN_DATASET_PATH, class_mode=None, batch_size=BATCH_SIZE, target_size=(HEIGHT, WIDTH))):
+    for batch_num, batch in enumerate(train_dataset):
         t1 = time.time()
         x = vgg16.preprocess_input(batch)
         content_act = utils.get_vgg_activation(CONTENT_LAYER, WIDTH, HEIGHT)([x])[0]
@@ -80,5 +85,5 @@ for layer in model_eval.layers:
     if layer.name in training_model_layers:
         layer.set_weights(training_model_layers[layer.name].get_weights())
 
-model_eval.save_weights(os.path.join(MODEL_SAVE_PATH, f'{STYLE_IMAGE_NAME}__weights.h5'))
+model_eval.save_weights(os.path.join(WEIGHT_SAVE_PATH, f'{STYLE_IMAGE_NAME}.h5'))
 print('Model has saved!')
