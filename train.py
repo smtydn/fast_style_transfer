@@ -24,9 +24,9 @@ CONTENT_WEIGHT = 7.5
 TV_WEIGHT = 2e2
 LEARNING_RATE = 1e-3 
 EPOCHS = 1
-TRAIN_DATASET_PATH = "D:\\Datasets\\test"
+TRAIN_DATASET_PATH = "D:\\Datasets\\COCO2014"
 WEIGHT_SAVE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\weights'
-LOG_PER_BATCH = 1
+LOG_PER_BATCH = 125
 
 # define dummy loss
 dummy_loss = lambda y_true, y_pred: y_pred
@@ -55,6 +55,7 @@ train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
     shuffle=True,
     label_mode=None
 ).prefetch(buffer_size=AUTOTUNE)
+
 dummy_in = utils.expand_input(BATCH_SIZE, np.array([0.0]))
 c_loss = None
 
@@ -65,6 +66,10 @@ for e in range(1, EPOCHS + 1):
     batch_num = 1
 
     for batch in train_dataset:
+        # Skip the last batch if the batch size is not equal to BATCH_SIZE
+        if len(batch) != BATCH_SIZE:
+            break
+
         x = vgg16.preprocess_input(batch)
         content_act = utils.get_vgg_activation(CONTENT_LAYER, WIDTH, HEIGHT)([x])[0]
 
@@ -76,7 +81,7 @@ for e in range(1, EPOCHS + 1):
 
         if batch_num % LOG_PER_BATCH == 0:
             loss = res.history['loss'][0]
-            print(f'Batch: {batch_num}\tLoss: {loss}')
+            print(f'Batch: {batch_num}\tLoss: {loss}\tTime: {datetime.now()}')
 
         batch_num += 1
 
