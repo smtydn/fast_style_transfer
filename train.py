@@ -27,6 +27,8 @@ EPOCHS = 1
 TRAIN_DATASET_PATH = "D:\\Datasets\\COCO2014"
 WEIGHT_SAVE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\weights'
 LOG_PER_BATCH = 125
+CHKPT_INTERVAL = 1000
+CHKPT_SAVE_PATH = os.path.join(WEIGHT_SAVE_PATH, 'checkpoints')
 
 # define dummy loss
 dummy_loss = lambda y_true, y_pred: y_pred
@@ -82,6 +84,18 @@ for e in range(1, EPOCHS + 1):
         if batch_num % LOG_PER_BATCH == 0:
             loss = res.history['loss'][0]
             print(f'Batch: {batch_num}\tLoss: {loss}\tTime: {datetime.now()}')
+
+        if batch_num % CHKPT_INTERVAL == 0:
+            print("Saving the checkpoint...")
+            model_eval = models.image_transform_network(WIDTH, HEIGHT)
+            training_model_layers = {layer.name: layer for layer in model.layers}
+            for layer in model_eval.layers:
+                if layer.name in training_model_layers:
+                    layer.set_weights(training_model_layers[layer.name].get_weights())
+
+            model_save_path = os.path.join(CHKPT_SAVE_PATH, f'{STYLE_IMAGE_NAME}__epoch_{e}_batch_{batch_num}.h5')
+            model_eval.save_weights(model_save_path)
+            print(f'Checkpoint has saved! Path: {model_save_path}')
 
         batch_num += 1
 
