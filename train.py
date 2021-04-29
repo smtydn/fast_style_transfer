@@ -6,28 +6,28 @@ import numpy as np
 import keras
 from keras.applications import vgg16
 
-import models
 import utils
+from models import style_transfer_net
 
 tf.config.run_functions_eagerly(True)
 AUTOTUNE = tf.data.AUTOTUNE
 
 WIDTH = 256
 HEIGHT = 256
-STYLE_IMAGE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\images\\style\\the_scream.jpg'
+STYLE_IMAGE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\images\\style\\bird.jpg'
 STYLE_IMAGE_NAME = os.path.split(STYLE_IMAGE_PATH)[-1].split('.')[0]
 STYLE_LAYERS = ["block1_conv2", "block2_conv2", "block3_conv3", "block4_conv3"]
 CONTENT_LAYER = "block2_conv2"
 BATCH_SIZE = 4
 STYLE_WEIGHT = 1e2
-CONTENT_WEIGHT = 7.5
+CONTENT_WEIGHT = 7.5e0
 TV_WEIGHT = 2e2
 LEARNING_RATE = 1e-3 
-EPOCHS = 1
+EPOCHS = 2
 TRAIN_DATASET_PATH = "D:\\Datasets\\COCO2014"
 WEIGHT_SAVE_PATH = 'C:\\Users\\samet\\Projects\\fast_style_transfer\\weights'
-LOG_PER_BATCH = 125
-CHKPT_INTERVAL = 1000
+LOG_PER_BATCH = 20
+CHKPT_INTERVAL = 2000
 CHKPT_SAVE_PATH = os.path.join(WEIGHT_SAVE_PATH, 'checkpoints')
 
 # define dummy loss
@@ -41,7 +41,7 @@ for layer_name in STYLE_LAYERS:
     style_acts.append(utils.expand_input(BATCH_SIZE, fn([style_image])[0]))
 
 # build training model
-model = models.training_model(bs=BATCH_SIZE)
+model = style_transfer_net(bs=BATCH_SIZE, training=True)
 model.compile(
     loss={'content': dummy_loss, 'style1': dummy_loss, 'style2': dummy_loss, 'style3': dummy_loss, 'style4': dummy_loss, 'tv': dummy_loss, 'output': dummy_loss},
     optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE),
@@ -87,7 +87,7 @@ for e in range(1, EPOCHS + 1):
 
         if batch_num % CHKPT_INTERVAL == 0:
             print("Saving the checkpoint...")
-            model_eval = models.image_transform_network(WIDTH, HEIGHT)
+            model_eval = style_transfer_net(width=WIDTH, height=HEIGHT, training=False)
             training_model_layers = {layer.name: layer for layer in model.layers}
             for layer in model_eval.layers:
                 if layer.name in training_model_layers:
@@ -101,7 +101,7 @@ for e in range(1, EPOCHS + 1):
 
 # Saving models
 print("Saving the model...")
-model_eval = models.image_transform_network(WIDTH, HEIGHT)
+model_eval = style_transfer_net(width=WIDTH, height=HEIGHT)
 training_model_layers = {layer.name: layer for layer in model.layers}
 for layer in model_eval.layers:
     if layer.name in training_model_layers:

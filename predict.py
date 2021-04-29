@@ -1,7 +1,7 @@
 import keras
 
 import utils
-import models
+from models import style_transfer_net
 
 
 def predict(img_read_path, img_write_path):
@@ -16,8 +16,8 @@ def predict(img_read_path, img_write_path):
     width = content.shape[2]
 
     # Get eval model
-    eval_model = models.image_transform_network(height, width)
-    eval_model.load_weights('C:\\Users\\samet\\Projects\\fast_style_transfer\\weights\\the_scream.h5')
+    eval_model = style_transfer_net(height, width)
+    eval_model.load_weights('C:\\Users\\samet\\Projects\\fast_style_transfer\\weights\\bird.h5')
 
     # Generate output and save image
     res = eval_model.predict([content])
