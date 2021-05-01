@@ -24,8 +24,8 @@ class TransformNet(Model):
             TransposeConvBlock(64, 3, 2),
             TransposeConvBlock(32, 3, 2),
             ConvBlock(3, 9, 1),
-            Activation(tanh),
-            Lambda(lambda x: x * 150 + 255./2)
+            # Activation(tanh),
+            # Lambda(lambda x: x * 150 + 255./2)
         ])
 
     def call(self, x):
@@ -47,6 +47,7 @@ class LossNet(Model):
         self.vgg.trainable = False
 
     def call(self, x):
+        x = vgg16.preprocess_input(x)
         vgg_outputs = self.vgg(x)
         style_features, content_features = (vgg_outputs[:len(self.style_layers)], vgg_outputs[len(self.style_layers):])
         return {'style': style_features, 'content': content_features}
