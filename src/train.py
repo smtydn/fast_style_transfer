@@ -75,7 +75,7 @@ def start(learning_rate, style_image_name, batch_size, image_size, content_weigh
             optimizer.apply_gradients(zip(grads, style_net.trainable_weights))
 
             if batch_num % log_interval == 0:
-                print(f'Batch: {batch_num}\tLoss:{total_loss:.2f}\tTime:{time.time()}')
+                print(f'Batch: {batch_num}\tLoss:{total_loss:.2f}\t\tTime:{datetime.datetime.now()}')
 
             if batch_num % chkpt_interval == 0:
                 chkpt_path = os.path.join(settings.CHECKPOINTS_DIR, f'{style_image_name}-epoch{epoch+1}-batch{batch_num}.h5')
