@@ -1,86 +1,94 @@
 import os
+import datetime
+
 import tensorflow as tf
+from keras.applications import vgg16
 
-import utils
-from models import TransformNet, LossNet
-
-
-# define constants
-style_image_path = r'C:\Users\samet\Projects\fast_style_transfer\images\style\the-scream.jpg'
-train_dataset_path = r'D:\Datasets\COCO2014'
-weight_save_path = r'C:\Users\samet\Projects\fast_style_transfer\weights'
-batch_size = 4
-image_size = (256, 256)
-learning_rate = 1e-3
-epochs = 1
-style_weight = 1e-2
-content_weight = 1e4
-loss_layers = ['block1_conv2', 'block2_conv2', 'block3_conv3', 'block4_conv3']
-content_layer = 'block3_conv3'
-
-# define networks
-loss_net = LossNet()
-style_net = TransformNet()
-
-# define optimizer and loss
-optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+import settings
+from src import utils
+from src.models import TransformNet, LossNet
 
 
-# load style image
-style_image = utils.preprocess_image(style_image_path)
-assert style_image.shape == (1, 720, 565, 3)
+def start(learning_rate, style_image_name, batch_size, image_size, content_weight, style_weight,
+            log_interval, chkpt_interval, epochs):
+    # Log start time
+    start_time = datetime.datetime.now()
+    print(f'Started at: {start_time}')
 
-# compute style features
-style_features = loss_net(style_image)
-# style_gram = [utils.gram_matrix(output) for layer_name, output in sorted(style_features.items())]
+    # Initialize networks
+    loss_net = LossNet()
+    style_net = TransformNet()
 
-# define train dataset loader
-train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
-    train_dataset_path,
-    batch_size=batch_size,
-    image_size=image_size,
-    shuffle=True,
-    label_mode=None
-)
+    # Define optimizer
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
-# define training loop
-for epoch in range(epochs):
-    batch_num = 1
-    for batch in train_dataset:
-        # Discard the last batch if does not have enough samples
-        if len(batch) != batch_size:
-            break
-        
-        with tf.GradientTape() as tape:
-            # Feed forward the batch, generate an image
-            generated_images = style_net(batch)
+    # Load style image, compute its features
+    style_image = utils.preprocess_image(
+        os.path.join(settings.STYLE_IMAGES_DIR, f'{style_image_name}.jpg'), vgg_preprocess=True
+    )
+    style_features = loss_net(style_image)
 
-            # Get original image and generated image features
-            orig_features = loss_net(batch)
-            generated_features = loss_net(generated_images)
+    # Define training dataset loader
+    train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+        settings.TRAIN_DATASET_PATH,
+        batch_size=batch_size,
+        image_size=image_size,
+        shuffle=True,
+        label_mode=None
+    )
 
-            # Compute content loss
-            content_loss = content_weight * tf.math.reduce_sum(tf.keras.losses.MSE(orig_features[content_layer], generated_features[content_layer]))
+    # Define training loop
+    for epoch in range(epochs):
+        print(f'Epoch: {epoch+1}')
+        batch_num = 1
+        for batch in train_dataset:
+            # Discard the last batch if does not have enough samples
+            if len(batch) != batch_size:
+                break
+            
+            with tf.GradientTape() as tape:
+                # Feed forward the batch, generate images
+                generated_images = style_net(batch)
 
-            # Compute style loss
-            style_loss = 0.0
-            for layer_name, layer_output in generated_features.items():
-                style_gram = utils.gram_matrix(style_features[layer_name])
-                generated_gram = utils.gram_matrix(layer_output)
-                style_loss += tf.math.reduce_sum(tf.keras.losses.MSE(style_gram, generated_gram))
-            style_loss *= style_weight
+                # Get original image and generated image features
+                original_image_features = loss_net(vgg16.preprocess_input(batch))
+                generated_image_features = loss_net(vgg16.preprocess_input(generated_images))
 
-            # Compute total loss
-            total_loss = content_loss + style_loss
-        
-        grad = tape.gradient(total_loss, style_net.trainable_weights)
-        optimizer.apply_gradients(zip(grad, style_net.trainable_weights))
+                # Compute content loss
+                content_loss = content_weight * tf.math.reduce_sum(
+                    tf.keras.losses.MSE(original_image_features['content'], generated_image_features['content'])
+                )
 
-        if batch_num % 50 == 0:
-            print(f'Batch: {batch_num}\tLoss:{total_loss:.2f}')
+                # Compute style loss
+                style_loss = 0.0
+                for orig_feat, gen_feat in zip(original_image_features['style'], generated_image_features['style']):
+                    style_loss += tf.math.reduce_sum(tf.keras.losses.MSE(
+                        utils.gram_matrix(orig_feat),
+                        utils.gram_matrix(gen_feat)
+                    ))
+                style_loss *= style_weight
 
-        if batch_num % 1000 == 0:
-            style_net.save_weights(os.path.join(weight_save_path, f'the-scream-batch{batch_num}.h5'))
-            break
+                # Compute total loss
+                total_loss = content_loss + style_loss
+            
+            grads = tape.gradient(total_loss, style_net.trainable_weights)
+            optimizer.apply_gradients(zip(grads, style_net.trainable_weights))
 
-        batch_num += 1
+            if batch_num % log_interval == 0:
+                print(f'Batch: {batch_num}\tLoss:{total_loss:.2f}\tTime:{time.time()}')
+
+            if batch_num % chkpt_interval == 0:
+                chkpt_path = os.path.join(settings.CHECKPOINTS_DIR, f'{style_image_name}-epoch{epoch+1}-batch{batch_num}.h5')
+                style_net.save_weights(chkpt_path)
+                print(f'Checkpoint saved. Path: {chkpt_path}')
+
+            batch_num += 1
+
+    weight_path = os.path.join(settings.WEIGHTS_DIR, f'{style_image_name}.h5')
+    style_net.save_weights(weight_path)
+    print(f'Weights saved. Path: {weight_path}')
+
+    end_time = time.time()
+    print(f'Finished at: {datetime.datetime.now()}')
+    print(f'Total time: {end_time - start_time}')
+    print('Training completed.')

@@ -5,7 +5,7 @@ from models import TransformNet
 import utils
 
 
-weights_path = r'C:\Users\samet\Projects\fast_style_transfer\weights\the-scream.h5'
+weights_path = r'C:\Users\samet\Projects\fast_style_transfer\weights\checkpoints\the-scream-batch10.h5'
 content_path = r'C:\Users\samet\Projects\fast_style_transfer\images\content\zurich.jpeg'
 output_path = r'C:\Users\samet\Projects\fast_style_transfer\images\output\zurich.jpg'
 
