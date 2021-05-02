@@ -17,12 +17,14 @@ def cli():
 @click.option('--epochs', default=1, show_default=True)
 @click.option('--sample_interval', default=1000, show_default=True)
 @click.option('--content_image')
+@click.option('--tv_weight', default=1e-6, show_default=True)
+@click.option('--chkpt_path', type=click.Path(), required=False, default=None)
 def train(learning_rate, style_image, batch_size, image_size, content_weight, style_weight, log_interval, chkpt_interval, epochs,
-        sample_interval, content_image):
+        sample_interval, content_image, tv_weight, chkpt_path):
     from src.train import start
     start(
         learning_rate, style_image, batch_size, image_size, content_weight, style_weight, log_interval, chkpt_interval, epochs,
-        sample_interval, content_image
+        sample_interval, content_image, tv_weight, chkpt_path
     )
 
 

@@ -24,8 +24,8 @@ class TransformNet(Model):
             TransposeConvBlock(64, 3, 2),
             TransposeConvBlock(32, 3, 2),
             ConvBlock(3, 9, 1),
-            # Activation(tanh),
-            # Lambda(lambda x: x * 150 + 255./2)
+            Activation(tanh),
+            Lambda(lambda x: (x + 1) * 127.5)
         ])
 
     def call(self, x):

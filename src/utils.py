@@ -1,15 +1,14 @@
 import numpy as np
 import tensorflow as tf
-from keras.preprocessing.image import load_img, img_to_array
 from keras.applications import vgg16
 
 
-def preprocess_image(image_path, target_size=None):
+def load_image(image_path, target_size=None):
     """ Load image to be able to feed it to the model """
     # Load image from the path, resize if it needed
-    img = load_img(image_path, target_size=target_size)
+    img = tf.keras.preprocessing.image.load_img(image_path, target_size=target_size)
     # Convert image to a Numpy array
-    img = img_to_array(img)
+    img = tf.keras.preprocessing.image.img_to_array(img, dtype='float32')
     # Add batch dimension
     img = np.expand_dims(img, axis=0)
     return img
