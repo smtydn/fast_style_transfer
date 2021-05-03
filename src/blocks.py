@@ -1,34 +1,33 @@
-import tensorflow as tf
-import keras
-import tensorflow_addons as tfa
+from tensorflow_addons.layers import InstanceNormalization
+from keras.layers import Layer, Conv2D, Conv2DTranspose, ReLU
 
 
-class ConvBlock(keras.layers.Layer):
+class ConvBlock(Layer):
     def __init__(self, filters, kernel_size, strides, relu=True):
         super(ConvBlock, self).__init__()
-        self.conv = keras.layers.Conv2D(filters, kernel_size, strides, padding='same')
-        self.norm = tfa.layers.InstanceNormalization()
+        self.conv = Conv2D(filters, kernel_size, strides, padding='same')
+        self.norm = InstanceNormalization()
         self.relu = relu
 
     def call(self, x):
         x = self.norm(self.conv(x))
         if self.relu:
-            x = keras.layers.ReLU()(x)
+            x = ReLU()(x)
         return x
 
 
-class TransposeConvBlock(keras.layers.Layer):
+class TransposeConvBlock(Layer):
     def __init__(self, filters, kernel_size, strides):
         super(TransposeConvBlock, self).__init__()
-        self.conv = keras.layers.Conv2DTranspose(filters, kernel_size, strides, padding='same')
-        self.norm = tfa.layers.InstanceNormalization()
-        self.relu = keras.layers.ReLU()
+        self.conv = Conv2DTranspose(filters, kernel_size, strides, padding='same')
+        self.norm = InstanceNormalization()
+        self.relu = ReLU()
 
     def call(self, x):
         return self.relu(self.norm(self.conv(x)))
 
 
-class ResidualBlock(keras.layers.Layer):
+class ResidualBlock(Layer):
     def __init__(self):
         super(ResidualBlock, self).__init__()
         self.conv1 = ConvBlock(128, 3, 1)

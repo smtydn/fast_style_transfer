@@ -1,86 +1,120 @@
 import os
+import datetime
+import functools
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
 import tensorflow as tf
+from keras.applications import vgg16
+import numpy as np
 
-import utils
-from models import TransformNet, LossNet
-
-
-# define constants
-style_image_path = r'C:\Users\samet\Projects\fast_style_transfer\images\style\the-scream.jpg'
-train_dataset_path = r'D:\Datasets\COCO2014'
-weight_save_path = r'C:\Users\samet\Projects\fast_style_transfer\weights'
-batch_size = 4
-image_size = (256, 256)
-learning_rate = 1e-3
-epochs = 1
-style_weight = 1e-2
-content_weight = 1e4
-loss_layers = ['block1_conv2', 'block2_conv2', 'block3_conv3', 'block4_conv3']
-content_layer = 'block3_conv3'
-
-# define networks
-loss_net = LossNet()
-style_net = TransformNet()
-
-# define optimizer and loss
-optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+import settings
+from src import utils, models
 
 
-# load style image
-style_image = utils.preprocess_image(style_image_path)
-assert style_image.shape == (1, 720, 565, 3)
+def start(learning_rate, style_image_name, batch_size, image_size, content_weight, style_weight,
+            log_interval, chkpt_interval, epochs, sample_interval, content_image, tv_weight, chkpt_path):
+    # Initialize networks
+    extractor = models.LossNet()
+    transformer = models.TransformNet()
 
-# compute style features
-style_features = loss_net(style_image)
-# style_gram = [utils.gram_matrix(output) for layer_name, output in sorted(style_features.items())]
+    # Load checkpoint if given
+    if chkpt_path:
+        transformer.build(input_shape=(1, 256, 256, 3))
+        transformer.load_weights(chkpt_path)
 
-# define train dataset loader
-train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
-    train_dataset_path,
-    batch_size=batch_size,
-    image_size=image_size,
-    shuffle=True,
-    label_mode=None
-)
+    # Define optimizer
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
-# define training loop
-for epoch in range(epochs):
-    batch_num = 1
-    for batch in train_dataset:
-        # Discard the last batch if does not have enough samples
-        if len(batch) != batch_size:
-            break
-        
-        with tf.GradientTape() as tape:
-            # Feed forward the batch, generate an image
-            generated_images = style_net(batch)
+    # Load style image
+    style_image_path = os.path.join(settings.STYLE_IMAGES_DIR, style_image_name)
+    style_image_name = style_image_name.split('.')[0]
+    style_image = utils.load_image(style_image_path)
 
-            # Get original image and generated image features
-            orig_features = loss_net(batch)
-            generated_features = loss_net(generated_images)
+    # Extract style features
+    style_features = extractor(style_image)
+    style_grams = list(map(utils.gram_matrix, style_features['style']))
 
-            # Compute content loss
-            content_loss = content_weight * tf.math.reduce_sum(tf.keras.losses.MSE(orig_features[content_layer], generated_features[content_layer]))
+    # Define training dataset
+    train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+        settings.TRAIN_DATASET_PATH,
+        label_mode=None, 
+        batch_size=batch_size,
+        image_size=image_size,
+        interpolation='nearest'
+    )
 
-            # Compute style loss
-            style_loss = 0.0
-            for layer_name, layer_output in generated_features.items():
-                style_gram = utils.gram_matrix(style_features[layer_name])
-                generated_gram = utils.gram_matrix(layer_output)
-                style_loss += tf.math.reduce_sum(tf.keras.losses.MSE(style_gram, generated_gram))
-            style_loss *= style_weight
+    # Log start time
+    start_time = datetime.datetime.now()
+    print(f'Started at: {start_time}')
 
-            # Compute total loss
-            total_loss = content_loss + style_loss
-        
-        grad = tape.gradient(total_loss, style_net.trainable_weights)
-        optimizer.apply_gradients(zip(grad, style_net.trainable_weights))
+    # Define training loop
+    for epoch in range(1, epochs+1):
+        print(f'Epoch: {epoch}')
+        batch_num = 1
+        for batch in train_dataset:
+            # Convert batch type to 'float32'
+            batch = tf.cast(batch, dtype='float32')
 
-        if batch_num % 50 == 0:
-            print(f'Batch: {batch_num}\tLoss:{total_loss:.2f}')
+            # Discard the last batch if does not have enough samples
+            if len(batch) != batch_size:
+                break
+            
+            with tf.GradientTape() as tape:
+                # Feed forward the batch, generate images
+                transformed = transformer(batch)
 
-        if batch_num % 1000 == 0:
-            style_net.save_weights(os.path.join(weight_save_path, f'the-scream-batch{batch_num}.h5'))
-            break
+                # Get original image and transformed image features
+                original_feats = extractor(batch)
+                transformed_feats = extractor(transformed)
 
-        batch_num += 1
+                # Compute content loss
+                content_size = functools.reduce(lambda x, y: x * y, original_feats['content'][0].shape)
+                content_loss = content_weight * tf.nn.l2_loss(
+                    original_feats['content'][0] - transformed_feats['content'][0]
+                ) / content_size
+
+                # Compute style loss
+                style_loss = 0.0
+                transformed_grams = map(utils.gram_matrix, transformed_feats['style'])
+                for style_gram, transformed_gram in zip(style_grams, transformed_grams):
+                    size = functools.reduce(lambda x, y: x * y, style_gram.shape)
+                    style_loss += tf.nn.l2_loss(style_gram - transformed_gram) / size
+                style_loss *= style_weight
+
+                # Compute total variation loss
+                tv_loss = tv_weight * tf.reduce_sum(tf.image.total_variation(transformed))
+
+                # Compute total loss
+                total_loss = content_loss + style_loss + tv_loss
+            
+            grads = tape.gradient(total_loss, transformer.trainable_weights)
+            optimizer.apply_gradients(zip(grads, transformer.trainable_weights))
+
+            if batch_num % log_interval == 0:
+                print(f'Batch: {batch_num}\tLoss:{total_loss:.2f}\t\tTime:{datetime.datetime.now()}')
+
+            if batch_num % chkpt_interval == 0:
+                chkpt_path = os.path.join(settings.CHECKPOINTS_DIR, f'{style_image_name}-epoch{epoch}-batch{batch_num}.h5')
+                transformer.save_weights(chkpt_path)
+                print(f'Checkpoint saved. Path: {chkpt_path}')
+
+            if batch_num % sample_interval == 0:
+                preprocessed_sample = utils.load_image(os.path.join(settings.CONTENT_IMAGES_DIR, content_image))
+                tf.keras.preprocessing.image.save_img(
+                    os.path.join(settings.SAMPLE_IMAGES_DIR, f'epoch{epoch}-batch{batch_num}-{style_image_name}-{content_image}'), 
+                    tf.squeeze(transformer(preprocessed_sample))
+                )
+                print('Sample image has saved.')
+
+            batch_num += 1
+
+    # Save weights
+    weight_path = os.path.join(settings.WEIGHTS_DIR, f'{style_image_name}.h5')
+    transformer.save_weights(weight_path)
+    print(f'Weights saved. Path: {weight_path}')
+
+    # Log end time
+    end_time = datetime.datetime.now()
+    print(f'Finished at: {end_time}')
+    print(f'Total time: {end_time - start_time}')
+    print('Training completed.')
