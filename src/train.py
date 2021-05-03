@@ -19,7 +19,7 @@ def start(learning_rate, style_image_name, batch_size, image_size, content_weigh
 
     # Load checkpoint if given
     if chkpt_path:
-        transformer.build(tf.ones(1, 256, 256, 3))
+        transformer.build(input_shape=(1, 256, 256, 3))
         transformer.load_weights(chkpt_path)
 
     # Define optimizer
