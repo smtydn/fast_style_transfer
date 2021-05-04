@@ -29,9 +29,12 @@ def train(learning_rate, style_image, batch_size, image_size, content_weight, st
 
 
 @click.command()
-def transform():
+@click.option('--style_name')
+@click.option('--content_path')
+@click.option('--output_path')
+def transform(style_name, content_path, output_path):
     from src.predict import predict
-    predict()
+    predict(style_name, content_path, output_path)
 
 
 cli.add_command(train)
