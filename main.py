@@ -5,7 +5,7 @@ def cli():
     pass
 
 
-@click.command()
+@cli.command()
 @click.option('--learning_rate', default=1e-3, show_default=True)
 @click.option('--style_image', help='Name of the style image. Should exists under images/style. Name should have extension.')
 @click.option('--batch_size', default=4, show_default=True)
@@ -28,7 +28,7 @@ def train(learning_rate, style_image, batch_size, image_size, content_weight, st
     )
 
 
-@click.command()
+@cli.command()
 @click.option('--style_name')
 @click.option('--content_path')
 @click.option('--output_path')
@@ -37,8 +37,12 @@ def transform(style_name, content_path, output_path):
     predict(style_name, content_path, output_path)
 
 
-cli.add_command(train)
-cli.add_command(transform)
+@cli.command()
+def runserver():
+    from src.server import create_app
+    app = create_app()
+    app.run()
+
 
 if __name__ == '__main__':
     cli()
