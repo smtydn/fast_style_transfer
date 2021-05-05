@@ -12,9 +12,6 @@ SAMPLE_IMAGES_DIR = os.path.join(IMAGES_DIR, 'samples')
 TEMPLATES_DIR = os.path.join(ROOT_DIR, 'templates')
 STATICFILE_DIR = os.path.join(TEMPLATES_DIR, 'static')
 
-# Generated image's path
-GENERATED_IMG_PATH = os.path.join(STATICFILE_DIR, 'generated.png')
-
 # Weights
 VGG16_WEIGHTS_PATH = os.path.join(WEIGHTS_DIR, 'vgg16.h5')
 

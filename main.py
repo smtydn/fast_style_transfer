@@ -30,11 +30,13 @@ def train(learning_rate, style_image, batch_size, image_size, content_weight, st
 
 @cli.command()
 @click.option('--style_name')
-@click.option('--content_path')
-@click.option('--output_path')
-def transform(style_name, content_path, output_path):
-    from src.predict import predict
-    predict(style_name, content_path, output_path)
+@click.option('--content_path', type=click.Path())
+@click.option('--output_path', type=click.Path())
+@click.option('--weights_path', type=click.Path(), default=None, show_default=True)
+def transform(style_name, content_path, output_path, weights_path):
+    from src.style_transformer import StyleTransformer
+    transformer = StyleTransformer(style_name, weights_path=weights_path)
+    transformer.predict(content_path, save=True, save_path=output_path)
 
 
 @cli.command()
