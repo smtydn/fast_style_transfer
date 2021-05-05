@@ -24,11 +24,11 @@ def create_app(test_config=None):
 
     @app.route('/', methods=['GET', 'POST'])
     def index_page():
-        # if request.method == 'POST':
-        #     uploaded_image = request.files['uploader']
-        #     if uploaded_image.content_type != 'application/octet-stream':
-        #         image = transformer2.predict(image=uploaded_image)
-        #         return render_template('generated.html', image=image)
+        if request.method == 'POST':
+            uploaded_image = request.files['uploader']
+            if uploaded_image.content_type != 'application/octet-stream':
+                image = transformer2.predict(image=uploaded_image)
+                return render_template('generated.html', image=image)
         return render_template('index.html')
 
     @app.route('/test')

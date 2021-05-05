@@ -18,3 +18,8 @@
   margin-right: auto;
   width: 50%
 }
+
+.thumbnail {
+  max-width: 100%;
+  height: auto;
+}
