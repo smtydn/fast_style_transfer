@@ -5,39 +5,42 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Neural Style Transfer</title>
+	<title>Sinirsel Stil Transferi</title>
 
 	<!-- Bootstrap core CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 
-	<!-- Local CSS -->
-	<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-
 	<!-- Local JS -->
-	<script src="{{ url_for('static', filename='generated.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/generated.js') }}"></script>
 </head>
 
 <body>
 	<div class="container">
+		{% if image %}
+		<div class="row text-center">
+			<!-- <img src="data:image/png;base64, {{ image }}" class="img-fluid" id="test"> -->
+			<img src="{{ url_for('static', filename=image) }}" class="img-fluid" id="test">
+		</div>
+		<div class="input-group-prepend text-center">
+			<a href="{{ url_for('static', filename=image) }}" download="generated.png"><button class="btn btn-outline-secondary" type="button">Goruntuyu Kaydet!</button></a>
+			<a href="/"><button class="btn btn-outline-secondary" type="button">Ana Sayfa</button></a>
+		</div>
+		{% else %}
 		<div class="row">
 			<!-- Input div -->
 			<div class="col">
+				<div class="text-center">
+					<img id="loadedImage" class="img-fluid rounded" >
+				</div>
 				<div class="custom-file">
 					<form method="POST" enctype="multipart/form-data">
 						<input type="file" accept="image/*" class="custom-file-input" id="uploader" name="uploader" onchange="loadImage()">
 						<input type="submit">
 					</form>
-					<img id="loadedImage" class="img-fluid" >
 					<!-- <label class="custom-file-label" for="validatedCustomFile">Choose file...</label> -->
 				</div>
 			</div>
 			<!-- Output div -->
-		</div>
-		{% if image %}
-		<div class="row">
-			<div class="col">
-				<img src="data:image/png;base64, {{ image }}" class="img-fluid">
-			</div>
 		</div>
 		{% endif %}
 	</div>

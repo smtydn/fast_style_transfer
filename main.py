@@ -36,7 +36,7 @@ def train(learning_rate, style_image, batch_size, image_size, content_weight, st
 def transform(style_name, content_path, output_path, weights_path):
     from src.style_transformer import StyleTransformer
     transformer = StyleTransformer(style_name, weights_path=weights_path)
-    transformer.predict(content_path, save=True, save_path=output_path)
+    transformer.predict(content_path, save_path=output_path, return_decoded=False)
 
 
 @cli.command()

@@ -29,20 +29,19 @@ class StyleTransformer:
         model.load_weights(self.weights_path)
         return model
 
-    def _deprocess_image(self, model_output, save=False, save_path=None):
+    def _deprocess_image(self, model_output, save_path=None, return_decoded=True):
         """ Deprocess image. save=False to make it ready for serving with flask. Else save image to given path."""
         result = tf.squeeze(model_output, axis=0)     # Remove batch dimension
-        if save:
+        if save_path:
             tf.keras.preprocessing.image.save_img(save_path, result)
-        if not save:
+        if return_decoded:
             result = tf.convert_to_tensor(result)   # EagerTensor -> Tensor. Needed for array_to_img
             image = tf.keras.preprocessing.image.array_to_img(result)
             image.save(self.buffer, format='PNG')   # Save image to buffer
             img_encoded = base64.b64encode(self.buffer.getvalue())  # bytes-like -> bytes
-            return img_encoded.decode('utf-8')  # Return decoded version            
+            return 'data:image/png;base64, ' + img_encoded.decode('utf-8')  # Return decoded version            
 
-
-    def predict(self, image=None, image_path=None, save=False, save_path=None):
+    def predict(self, image=None, image_path=None, save_path=None, return_decoded=True):
         """ Main function. Makes prediction and saves image to buffer."""
         if image_path:
             image = utils.load_image_from_path(image_path)
@@ -52,4 +51,4 @@ class StyleTransformer:
             raise Exception("'image' or 'image_path' must be provided.")
 
         result = self.model(image)
-        return self._deprocess_image(result, save=save, save_path=save_path)
+        return self._deprocess_image(result, save_path=save_path, return_decoded=return_decoded)

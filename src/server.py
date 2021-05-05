@@ -1,11 +1,13 @@
 import os
 import base64
 import io
+import time
 
 from flask import Flask, render_template, send_file, request
 import PIL
 
 import settings
+from src import utils
 from src.style_transformer import StyleTransformer
 
 
@@ -14,35 +16,42 @@ def create_app(test_config=None):
     app.template_folder = settings.TEMPLATES_DIR
     app.static_folder = settings.STATICFILE_DIR
 
-    transformer = StyleTransformer('starry_night')
-    transformer2 = StyleTransformer('rain_princess')
+    transformer_starry_night = StyleTransformer('starry_night')
+    transformer_rain_princess = StyleTransformer('rain_princess')
+    transformer_la_muse = StyleTransformer('la_muse')
 
-    @app.after_request
-    def add_header(response):
-        response.headers['Cache-Control'] = 'public, max-age=0'
-        return response
-
-    @app.route('/', methods=['GET', 'POST'])
+    @app.route('/', methods=['GET'])
     def index_page():
-        if request.method == 'POST':
-            uploaded_image = request.files['uploader']
-            if uploaded_image.content_type != 'application/octet-stream':
-                image = transformer2.predict(image=uploaded_image)
-                return render_template('generated.html', image=image)
         return render_template('index.html')
 
-    @app.route('/test')
-    def test_page():
-        image = transformer.predict(r'C:\Users\samet\Projects\fast_style_transfer\images\content\a_man_on_the_moon.jpg')
-        return render_template('generated.html', image=image)
-
-    @app.route('/test2', methods=['GET', 'POST'])
-    def test_page2():
+    @app.route('/starry_night', methods=['GET', 'POST'])
+    def starry_night():
         if request.method == 'POST':
             uploaded_image = request.files['uploader']
-            if uploaded_image.content_type != 'application/octet-stream':
-                image = transformer2.predict(image=uploaded_image)
-                return render_template('generated.html', image=image)
+            filename, save_path = utils.create_temp_img_path()
+            utils.remove_temp_images()
+            transformer_starry_night.predict(image=uploaded_image, return_decoded=False, save_path=save_path)
+            return render_template('generated.html', image=filename)
+        return render_template('generated.html')
+
+    @app.route('/rain_princess', methods=['GET', 'POST'])
+    def rain_princess():
+        if request.method == 'POST':
+            uploaded_image = request.files['uploader']
+            filename, save_path = utils.create_temp_img_path()
+            utils.remove_temp_images()
+            transformer_rain_princess.predict(image=uploaded_image, return_decoded=False, save_path=save_path)
+            return render_template('generated.html', image=filename)
+        return render_template('generated.html')
+
+    @app.route('/la_muse', methods=['GET', 'POST'])
+    def la_muse():
+        if request.method == 'POST':
+            uploaded_image = request.files['uploader']
+            filename, save_path = utils.create_temp_img_path()
+            utils.remove_temp_images()
+            transformer_la_muse.predict(image=uploaded_image, return_decoded=False, save_path=save_path)
+            return render_template('generated.html', image=filename)
         return render_template('generated.html')
 
     return app

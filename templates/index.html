@@ -12,9 +12,6 @@
 
 	<!-- Local CSS -->
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-
-	<!-- Local JS -->
-	<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </head>
 
 <body>
@@ -23,26 +20,13 @@
 			<div class="row">
 				<div class="col">
 					<h1 class="fw-light">Sinirsel Stil Transferi</h1>
-					<p class="lead text-muted">
-						<i>Perceptual Losses for Real-Time Style Transfer and Style Resolution</i> adlı makale çerçevesinde yapılan bir sinirsel stil transferi uygulaması.
-						İstediğin bir fotoğrafı yükle, 
-					</p>
+					<p class="lead text-muted">İstediğin bir fotoğrafı yükle, sanatını gerçekleştir!</p>
 				</div>
 			</div>
 		</section>
 
-		<!-- Image input division -->
-		<div class="container">
-			<div class="row justify-content-md-center">
-				<!-- Input div -->
-				<div class="custom-file">
-					<img id="loadedImage" class="img-fluid center-block">
-					<form method="POST" enctype="multipart/form-data">
-						<input type="file" accept="image/*" class="custom-file-input" id="uploader" name="uploader" onchange="loadImage(maxSize=585)">
-						<input type="submit">
-					</form>
-				</div>
-			</div>
+		<div class="row text-center">
+			<h2 class="fw-light">Mevcut Stiller</h2>
 		</div>
 
 		<div class="album bg-light">
@@ -50,7 +34,7 @@
 				<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
 					<div class="col-sm-4">
 						<div class="card shadow-sm">
-							<a href="test/"><img class="img-fluid thumbnail" src="{{ url_for('static', filename='images/starry_night.jpg') }}"></a>
+							<a href="/starry_night"><img class="img-fluid thumbnail" src="{{ url_for('static', filename='images/starry_night.jpg') }}"></a>
 							<div class="card-body">
 								<p class="card-text">İlk stil</p>
 							</div>
@@ -58,7 +42,7 @@
 					</div>
 					<div class="col-sm-4">
 						<div class="card shadow-sm">
-							<a href="test/"><img class="img-fluid thumbnail" src="{{ url_for('static', filename='images/rain_princess.jpg') }}"></a>
+							<a href="/rain_princess"><img class="img-fluid thumbnail" src="{{ url_for('static', filename='images/rain_princess.jpg') }}"></a>
 							<div class="card-body">
 								<p class="card-text">İkinci stil</p>
 							</div>
@@ -67,7 +51,7 @@
 
 					<div class="col-sm-4">
 						<div class="card shadow-sm">
-							<a href="test/"><img class="img-fluid thumbnail" src="{{ url_for('static', filename='images/la_muse.jpg') }}"></a>
+							<a href="/la_muse"><img class="img-fluid thumbnail" src="{{ url_for('static', filename='images/la_muse.jpg') }}"></a>
 							<div class="card-body">
 								<p class="card-text">Ücüncü stil</p>
 							</div>
@@ -76,6 +60,7 @@
 				</div>
 			</div>
 		</div>
+
 	</main>
 
 	<!-- JQuery minified script -->

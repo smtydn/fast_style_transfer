@@ -23,3 +23,7 @@
   max-width: 100%;
   height: auto;
 }
+
+.custom-file {
+  height: 600px;
+}
