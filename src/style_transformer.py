@@ -2,6 +2,7 @@ import os
 import io
 import base64
 
+import PIL
 import tensorflow as tf
 
 import settings
@@ -31,33 +32,24 @@ class StyleTransformer:
     def _deprocess_image(self, model_output, save=False, save_path=None):
         """ Deprocess image. save=False to make it ready for serving with flask. Else save image to given path."""
         result = tf.squeeze(model_output, axis=0)     # Remove batch dimension
+        if save:
+            tf.keras.preprocessing.image.save_img(save_path, result)
         if not save:
             result = tf.convert_to_tensor(result)   # EagerTensor -> Tensor. Needed for array_to_img
             image = tf.keras.preprocessing.image.array_to_img(result)
             image.save(self.buffer, format='PNG')   # Save image to buffer
             img_encoded = base64.b64encode(self.buffer.getvalue())  # bytes-like -> bytes
-            return img_encoded.decode('utf-8')  # Return decoded version
-        else:
-            tf.keras.preprocessing.image.save_img(save_path, result)
+            return img_encoded.decode('utf-8')  # Return decoded version            
 
 
-    def predict(self, image_path, save=False, save_path=None):
+    def predict(self, image=None, image_path=None, save=False, save_path=None):
         """ Main function. Makes prediction and saves image to buffer."""
-        image = utils.load_image(image_path)
+        if image_path:
+            image = utils.load_image_from_path(image_path)
+        elif image:
+            image = utils.load_image_from_buffer(image)
+        else:
+            raise Exception("'image' or 'image_path' must be provided.")
+
         result = self.model(image)
         return self._deprocess_image(result, save=save, save_path=save_path)
-
-
-# def predict(style_name, image_path, output_path):
-#     weights_path = os.path.join(settings.WEIGHTS_DIR, f'{style_name}.h5')
-
-#     model = TransformNet()
-#     model(tf.ones(shape=(1, 256, 256, 3)))
-#     model.load_weights(weights_path)
-
-#     content_image = utils.load_image(image_path)
-#     res = model(content_image)
-#     res = tf.squeeze(res)
-
-#     tf.keras.preprocessing.image.save_img(output_path, res)
-#     print('Image has saved.')

@@ -12,10 +12,35 @@
 
 	<!-- Local CSS -->
 	<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+
+	<!-- Local JS -->
+	<script src="{{ url_for('static', filename='generated.js') }}"></script>
 </head>
 
 <body>
-    <img src="data:image/png;base64, {{ image }}">
+	<div class="container">
+		<div class="row">
+			<!-- Input div -->
+			<div class="col">
+				<div class="custom-file">
+					<form method="POST" enctype="multipart/form-data">
+						<input type="file" accept="image/*" class="custom-file-input" id="uploader" name="uploader" onchange="loadImage()">
+						<input type="submit">
+					</form>
+					<img id="loadedImage" class="img-fluid" >
+					<!-- <label class="custom-file-label" for="validatedCustomFile">Choose file...</label> -->
+				</div>
+			</div>
+			<!-- Output div -->
+		</div>
+		{% if image %}
+		<div class="row">
+			<div class="col">
+				<img src="data:image/png;base64, {{ image }}" class="img-fluid">
+			</div>
+		</div>
+		{% endif %}
+	</div>
 
 	<!-- JQuery minified script -->
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>

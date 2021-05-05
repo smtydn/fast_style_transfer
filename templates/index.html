@@ -5,13 +5,16 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Neural Style Transfer</title>
+	<title>Sinirsel Stil Transferi</title>
 
 	<!-- Bootstrap core CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 
 	<!-- Local CSS -->
 	<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+
+	<!-- Local JS -->
+	<script src="{{ url_for('static', filename='index.js') }}"></script>
 </head>
 
 <body>
@@ -20,10 +23,29 @@
 			<div class="row">
 				<div class="col">
 					<h1 class="fw-light">Sinirsel Stil Transferi</h1>
-					<p class="lead text-muted"><i>Perceptual Losses for Real-Time Style Transfer and Style Resolution</i> adlı makale çerçevesinde yapılan bir sinirsel stil transferi uygulaması.</p>
+					<p class="lead text-muted">
+						<i>Perceptual Losses for Real-Time Style Transfer and Style Resolution</i> adlı makale çerçevesinde yapılan bir sinirsel stil transferi uygulaması.
+						İstediğin bir fotoğrafı yükle, 
+					</p>
 				</div>
 			</div>
 		</section>
+
+		<!-- Image input division -->
+		<div class="container">
+			<div class="row justify-content-md-center">
+				<!-- Input div -->
+				<div class="custom-file">
+					<!-- <form method="POST" enctype="multipart/form-data"> -->
+					<form enctype="multipart/form-data">
+						<input type="file" accept="image/*" class="custom-file-input" id="uploader" name="uploader" onchange="loadImage(maxSize=585)">
+						<input type="submit">
+					</form>
+					<img id="loadedImage" class="img-fluid center-block">
+					<!-- <label class="custom-file-label" for="validatedCustomFile">Choose file...</label> -->
+				</div>
+			</div>
+		</div>
 
 		<div class="album bg-light">
 			<div class="container">
