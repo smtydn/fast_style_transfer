@@ -16,49 +16,52 @@
 </head>
 
 <body>
-	<div class="container">
-		{% if image %}
-		<div class="row text-center">
-			<img src="{{ url_for('static', filename=image) }}" class="img-fluid img-thumbnail" id="result" onload="loadResult()">
+	<div class="card bg-light m-5">
+		<div class="card-body p-5">
+			<div class="container shadow border border-info rounded">
+				{% if image %}
+				<div class="row text-center">
+					<img src="{{ url_for('static', filename=image) }}" class="img-fluid img-thumbnail" id="result" onload="loadResult()">
+				</div>
+					<div class="row">
+						<div class="col-sm-6 text-center">
+							<a href="{{ url_for('static', filename=image) }}" download="generated.png">
+								<label class="btn btn-primary">Görüntüyü kaydet!</label>
+							</a>
+						</div>
+						<div class="col-sm-6 text-center">
+							<a href="/">
+								<label class="btn btn-primary">Ana sayfaya dön!</label>
+							</a>
+						</div>
+					</div>
+				</div>	
+				{% else %}
+				<div class="row">
+					<div class="col text-center">
+						<h3 class="fw-light mt-5 mb-4">Görüntünü seç!</h3>
+					</div>
+				</div>
+				<form method="POST" enctype="multipart/form-data">
+					<div class="row text-center">
+						<div class="col">
+							<label for="uploader">
+								<img id="loadedImage" class="img-fluid img-thumbnail shadow" src="{{ url_for('static', filename='images/800x600.png') }}">
+							</label>
+							<input type="file" style="display:none" accept="image/*" class="custom-file-input filestyle" id="uploader" name="uploader" data-ButtonText="Dosya Ara" onchange="loadImage()">
+						</div>
+					</div>
+					<div class="row">
+						<div class="col text-center mb-3">
+							<label class="btn btn-warning btn-lg shadow">
+								Dönüştür!<input type="submit" style="display:none">
+							</label>
+						</div>
+					</div>
+				</form>
+				{% endif %}
+			</div>
 		</div>
-			<div class="row">
-				<div class="col-sm-6 text-center">
-					<a href="{{ url_for('static', filename=image) }}" download="generated.png">
-						<label class="btn btn-primary">Goruntuyu kaydet!</label>
-					</a>
-				</div>
-				<div class="col-sm-6 text-center">
-					<a href="/">
-						<label class="btn btn-primary">Ana sayfaya don!</label>
-					</a>
-				</div>
-			</div>
-		</div>	
-		{% else %}
-		<div class="row text-center">
-			<div class="col">
-				<label for="uploader">
-					<img id="loadedImage" class="img-fluid img-thumbnail" src="https://via.placeholder.com/800x600.png?text=G%C3%B6r%C3%BCnt%C3%BCn%C3%BC%20Se%C3%A7!">
-				</label>
-				<input type="file" style="display:none" accept="image/*" class="custom-file-input filestyle" id="uploader" name="uploader" data-ButtonText="Dosya Ara" onchange="loadImage()">
-			</div>
-		</div>
-		<form method="POST" enctype="multipart/form-data">
-			<div class="row">
-				<div class="col-sm-6 text-center">
-					<label class="btn btn-primary">
-						Dosya sec!
-						<input type="file" style="display:none" accept="image/*" class="custom-file-input filestyle" id="uploader" name="uploader" data-ButtonText="Dosya Ara" onchange="loadImage()">
-					</label>
-				</div>
-				<div class="col-sm-6 text-center">
-					<label class="btn btn-primary">
-						Donustur!<input type="submit" style="display:none">
-					</label>
-				</div>
-			</div>
-		</form>
-		{% endif %}
 	</div>
 
 	<!-- JQuery -->

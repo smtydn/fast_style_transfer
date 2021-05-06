@@ -1,3 +1,7 @@
+body {
+    background: radial-gradient(circle, black, orange);
+}  
+
 label {
     margin: 20px;
 }

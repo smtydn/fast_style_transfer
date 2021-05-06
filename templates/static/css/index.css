@@ -1,12 +1,6 @@
 body {
-  /* background: url('templates\static\images\background.png') no-repeat center center fixed; */
   background: radial-gradient(circle, black, orange);
 }
-
-/* #mainBody {
-  margin-top: auto;
-  margin-bottom: auto;
-} */
 
 .bd-placeholder-img {
     font-size: 1.125rem;
