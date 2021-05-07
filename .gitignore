@@ -158,3 +158,6 @@ images/samples
 
 # remove .vscode
 .vscode/
+
+# remove temp images if exists
+templates/static/images/temp*
