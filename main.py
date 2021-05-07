@@ -21,7 +21,7 @@ def cli():
 @click.option('--chkpt_path', type=click.Path(), required=False, default=None)
 def train(learning_rate, style_image, batch_size, image_size, content_weight, style_weight, log_interval, chkpt_interval, epochs,
         sample_interval, content_image, tv_weight, chkpt_path):
-    from src.train import start
+    from src.transformer.train import start
     start(
         learning_rate, style_image, batch_size, image_size, content_weight, style_weight, log_interval, chkpt_interval, epochs,
         sample_interval, content_image, tv_weight, chkpt_path
@@ -34,14 +34,14 @@ def train(learning_rate, style_image, batch_size, image_size, content_weight, st
 @click.option('--output_path', type=click.Path())
 @click.option('--weights_path', type=click.Path(), default=None, show_default=True)
 def transform(style_name, content_path, output_path, weights_path):
-    from src.style_transformer import StyleTransformer
+    from src.transformer.style_transformer import StyleTransformer
     transformer = StyleTransformer(style_name, weights_path=weights_path)
     transformer.predict(content_path, save_path=output_path, return_decoded=False)
 
 
 @cli.command()
 def runserver():
-    from src.server import create_app
+    from src.api.server import create_app
     app = create_app()
     app.run()
 

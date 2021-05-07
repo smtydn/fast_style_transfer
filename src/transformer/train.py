@@ -4,11 +4,11 @@ import functools
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
 import tensorflow as tf
-from keras.applications import vgg16
+from tensorflow.keras.applications import vgg16
 import numpy as np
 
-import settings
-from src import utils, models
+from src import settings
+from src.transformer import utils, models
 
 
 def start(learning_rate, style_image_name, batch_size, image_size, content_weight, style_weight,

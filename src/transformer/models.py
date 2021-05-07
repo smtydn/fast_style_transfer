@@ -1,38 +1,35 @@
 import tensorflow as tf
-from keras import Model, Sequential
-from keras.applications import vgg16
-from keras.layers import Activation, Lambda
-from keras.activations import tanh
+from tensorflow.keras.applications import vgg16
 
-import settings
-from src.blocks import ConvBlock, ResidualBlock, TransposeConvBlock
+from src import settings
+from src.transformer import blocks
 
 
-class TransformNet(Model):
+class TransformNet(tf.keras.Model):
     """ Image Transform Network """
     def __init__(self):
         super(TransformNet, self).__init__()
-        self.model = Sequential([
-            ConvBlock(32, 9, 1),
-            ConvBlock(64, 3, 2),
-            ConvBlock(128, 3, 2),
-            ResidualBlock(),
-            ResidualBlock(),
-            ResidualBlock(),
-            ResidualBlock(),
-            ResidualBlock(),
-            TransposeConvBlock(64, 3, 2),
-            TransposeConvBlock(32, 3, 2),
-            ConvBlock(3, 9, 1),
-            Activation(tanh),
-            Lambda(lambda x: (x + 1) * 127.5)
+        self.model = tf.keras.Sequential([
+            blocks.ConvBlock(32, 9, 1),
+            blocks.ConvBlock(64, 3, 2),
+            blocks.ConvBlock(128, 3, 2),
+            blocks.ResidualBlock(),
+            blocks.ResidualBlock(),
+            blocks.ResidualBlock(),
+            blocks.ResidualBlock(),
+            blocks.ResidualBlock(),
+            blocks.TransposeConvBlock(64, 3, 2),
+            blocks.TransposeConvBlock(32, 3, 2),
+            blocks.ConvBlock(3, 9, 1),
+            tf.keras.layers.Activation(tf.keras.activations.tanh),
+            tf.keras.layers.Lambda(lambda x: (x + 1) * 127.5)
         ])
 
     def call(self, x):
         return self.model(x)
 
 
-class LossNet(Model):
+class LossNet(tf.keras.Model):
     """ Pretrained VGG16 network. Returns needed intermediate layers for style and content losses. """
     def __init__(self):
         super(LossNet, self).__init__()

@@ -5,9 +5,9 @@ import base64
 import PIL
 import tensorflow as tf
 
-import settings
-from src import utils
-from src.models import TransformNet
+from src import settings
+from src.transformer import utils
+from src.transformer.models import TransformNet
 
 
 class StyleTransformer:

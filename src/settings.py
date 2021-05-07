@@ -1,7 +1,8 @@
 import os
+import pathlib
 
 # Directories
-ROOT_DIR = os.path.split(os.path.abspath(__file__))[0]
+ROOT_DIR = pathlib.Path(os.path.split(os.path.abspath(__file__))[0]).parent.absolute()
 WEIGHTS_DIR = os.path.join(ROOT_DIR, 'weights')
 CHECKPOINTS_DIR = os.path.join(WEIGHTS_DIR, 'checkpoints')
 IMAGES_DIR = os.path.join(ROOT_DIR, 'images')

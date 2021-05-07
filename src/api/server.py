@@ -6,9 +6,9 @@ import time
 from flask import Flask, render_template, send_file, request
 import PIL
 
-import settings
-from src import utils
-from src.style_transformer import StyleTransformer
+from src import settings
+from src.api import utils
+from src.transformer.style_transformer import StyleTransformer
 
 
 def create_app(test_config=None):
