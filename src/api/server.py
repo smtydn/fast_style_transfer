@@ -8,7 +8,7 @@ import PIL
 
 from src import settings
 from src.api import utils
-from src.transformer.style_transformer import StyleTransformer
+from src.transformer import StyleTransformer
 
 
 def create_app(test_config=None):
@@ -16,41 +16,42 @@ def create_app(test_config=None):
     app.template_folder = settings.TEMPLATES_DIR
     app.static_folder = settings.STATICFILE_DIR
 
-    transformer_starry_night = StyleTransformer('starry_night')
-    transformer_rain_princess = StyleTransformer('rain_princess')
-    transformer_la_muse = StyleTransformer('la_muse')
+    # Prediction models
+    starry_night = StyleTransformer(r'weights\starry_night.h5')
+    rain_princess = StyleTransformer(r'weights\rain_princess.h5')
+    la_muse = StyleTransformer(r'weights\la_muse-sw_1-cw_1.h5')
 
     @app.route('/', methods=['GET'])
     def index_page():
         return render_template('index.html')
 
     @app.route('/starry_night', methods=['GET', 'POST'])
-    def starry_night():
+    def starry_night_route():
         if request.method == 'POST':
             uploaded_image = request.files['uploader']
             filename, save_path = utils.create_temp_img_path()
             utils.remove_temp_images()
-            transformer_starry_night.predict(image=uploaded_image, return_decoded=False, save_path=save_path)
+            starry_night.predict(image=uploaded_image, save_path=save_path)
             return render_template('generated.html', image=filename)
         return render_template('generated.html')
 
     @app.route('/rain_princess', methods=['GET', 'POST'])
-    def rain_princess():
+    def rain_princess_route():
         if request.method == 'POST':
             uploaded_image = request.files['uploader']
             filename, save_path = utils.create_temp_img_path()
             utils.remove_temp_images()
-            transformer_rain_princess.predict(image=uploaded_image, return_decoded=False, save_path=save_path)
+            rain_princess.predict(image=uploaded_image, save_path=save_path)
             return render_template('generated.html', image=filename)
         return render_template('generated.html')
 
     @app.route('/la_muse', methods=['GET', 'POST'])
-    def la_muse():
+    def la_muse_route():
         if request.method == 'POST':
             uploaded_image = request.files['uploader']
             filename, save_path = utils.create_temp_img_path()
             utils.remove_temp_images()
-            transformer_la_muse.predict(image=uploaded_image, return_decoded=False, save_path=save_path)
+            la_muse.predict(image=uploaded_image, save_path=save_path)
             return render_template('generated.html', image=filename)
         return render_template('generated.html')
 

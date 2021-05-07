@@ -6,37 +6,36 @@ def cli():
 
 
 @cli.command()
-@click.option('--learning_rate', default=1e-3, show_default=True)
-@click.option('--style_image', help='Name of the style image. Should exists under images/style. Name should have extension.')
-@click.option('--batch_size', default=4, show_default=True)
-@click.option('--image_size', default=(256, 256), show_default=True)
-@click.option('--content_weight', default=1e4, show_default=True)
-@click.option('--style_weight', default=1e-2, show_default=True)
-@click.option('--log_interval', default=100, show_default=True)
-@click.option('--chkpt_interval', default=2000, show_default=True)
-@click.option('--epochs', default=1, show_default=True)
-@click.option('--sample_interval', default=1000, show_default=True)
-@click.option('--content_image')
-@click.option('--tv_weight', default=1e-6, show_default=True)
-@click.option('--chkpt_path', type=click.Path(), required=False, default=None)
-def train(learning_rate, style_image, batch_size, image_size, content_weight, style_weight, log_interval, chkpt_interval, epochs,
-        sample_interval, content_image, tv_weight, chkpt_path):
-    from src.transformer.train import start
-    start(
-        learning_rate, style_image, batch_size, image_size, content_weight, style_weight, log_interval, chkpt_interval, epochs,
-        sample_interval, content_image, tv_weight, chkpt_path
-    )
+@click.option('--style_image_path', type=click.Path(), help='Path to the style image.')
+@click.option('--content_image_path', type=click.Path(), help='Path to the content image. Will be used for sampling.')
+@click.option('--train_dataset_path', type=click.Path(), help='Path to the training dataset.')
+@click.option('--checkpoint_dir', type=click.Path(), help='Path for checkpoints.')
+@click.option('--weights_dir', type=click.Path(), help='Path for weights to save.')
+@click.option('--sample_dir', type=click.Path(), help='Path for sample images to save.')
+@click.option('--batch_size', type=click.INT, help="Batch size.", default=4, show_default=True)
+@click.option('--epochs', type=click.INT, help='Number of epochs.', default=1, show_default=True)
+@click.option('--learning_rate', type=click.FLOAT, help='Learning rate.', default=1e-3, show_default=True)
+@click.option('--content_weight', type=click.FLOAT, help='Content loss weight.', default=1.0, show_default=True)
+@click.option('--style_weight', type=click.FLOAT, help='Style loss weight.', default=1.0, show_default=True)
+@click.option('--tv_weight', type=click.FLOAT, help='Total variation loss weight.', default=1e-6, show_default=True)
+@click.option('--log_interval', type=click.INT, help='Logging interval.', default=100, show_default=True)
+@click.option('--checkpoint_interval', type=click.INT, help='Checkpoint interval.', default=2000, show_default=True)
+@click.option('--sample_interval', type=click.INT, help='Sampling interval.', default=1000, show_default=True)
+@click.option('--checkpoint_path', type=click.Path(), required=False, default=None, help='A path for model to load weights before training.')
+def train(**kwargs):
+    from src.transformer import TransformNetTrainer
+    trainer = TransformNetTrainer(**kwargs)
+    trainer.run()
 
 
 @cli.command()
-@click.option('--style_name')
-@click.option('--content_path', type=click.Path())
-@click.option('--output_path', type=click.Path())
-@click.option('--weights_path', type=click.Path(), default=None, show_default=True)
-def transform(style_name, content_path, output_path, weights_path):
-    from src.transformer.style_transformer import StyleTransformer
-    transformer = StyleTransformer(style_name, weights_path=weights_path)
-    transformer.predict(content_path, save_path=output_path, return_decoded=False)
+@click.option('--weights_path', type=click.Path(), help='Path for model to load weights.')
+@click.option('--save_path', type=click.Path(), help='Path for model to save output from prediction.')
+@click.option('--image_path', type=click.Path(), help='Path for content image.')
+def predict(weights_path, save_path, image_path):
+    from src.transformer import StyleTransformer
+    transformer = StyleTransformer(weights_path)
+    transformer.predict(save_path, image_path=image_path)
 
 
 @cli.command()

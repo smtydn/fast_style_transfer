@@ -20,7 +20,7 @@ def load_image_from_path(image_path, target_size=None):
     return img
 
 
-def load_image_from_buffer(image):
+def load_image_from_file(image):
     image = PIL.Image.open(image)
     image = tf.keras.preprocessing.image.img_to_array(image, dtype='float32')
     image = np.expand_dims(image, axis=0)
