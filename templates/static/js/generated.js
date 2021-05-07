@@ -1,4 +1,4 @@
-function loadImage(maxSize = 1024) {
+function loadContentImage(maxSize = 1024) {
     // Resize given image file then load to #loadedImage
     let item = document.querySelector('#uploader').files[0]   // Get the given image
     let reader = new FileReader()   // Define a FileReader
@@ -8,71 +8,42 @@ function loadImage(maxSize = 1024) {
     reader.onload = function (event) {
         let img = new Image()
         img.src = event.target.result
-
-        img.onload = function (el) {
-            let elem = document.createElement('canvas')
-
-            if (el.target.width > maxSize || el.target.height > maxSize) {
-                let scaleFactor = null
-                if (el.target.width >= el.target.height) {
-                    scaleFactor = maxSize / el.target.width
-                    elem.width = maxSize
-                    elem.height = el.target.height * scaleFactor
-                } else {
-                    scaleFactor = maxSize / el.target.height
-                    elem.width = el.target.width * scaleFactor
-                    elem.height = maxSize
-                    console.log("image shapes: ", el.target.width, el.target.height)
-                    console.log("canvas shapes: ", elem.width, elem.height)
-                }
-            } else {
-                elem.width = el.target.width
-                elem.height = el.target.height
-            }
-
-            let ctx = elem.getContext('2d')
-            ctx.drawImage(el.target, 0, 0, elem.width, elem.height)
-
-            let srcEncoded = ctx.canvas.toDataURL(el.target, 'image/jpeg', 0)
-
-            document.querySelector('#loadedImage').src = srcEncoded
-        }
+        img.onload = (event) => { document.querySelector('#loadedImage').src = _resizeImage(event, maxSize) }
     }
 }
 
 
-function loadResult(maxSize = 1024) {
-    // Resize generated image according to 'maxSize' and load it
-    let imagePath = document.querySelector('#result').src   // Get the given image
+function loadGeneratedImage(maxSize = 1024) {
+    // Resize generated image according to 'maxSize' and load it to '#result'
     let image = new Image()
-    image.src = imagePath
-    
-    image.onload = function (el) {
-        let elem = document.createElement('canvas')
+    image.src = document.querySelector('#result').src
+    image.onload = (event) => { document.querySelector('#result').src = _resizeImage(event, maxSize) }
+}
 
-        if (el.target.width > maxSize || el.target.height > maxSize) {
-            let scaleFactor = null
-            if (el.target.width >= el.target.height) {
-                scaleFactor = maxSize / el.target.width
-                elem.width = maxSize
-                elem.height = el.target.height * scaleFactor
-            } else {
-                scaleFactor = maxSize / el.target.height
-                elem.width = el.target.width * scaleFactor
-                elem.height = maxSize
-                console.log("image shapes: ", el.target.width, el.target.height)
-                console.log("canvas shapes: ", elem.width, elem.height)
-            }
+
+function _resizeImage(event, size) {
+    // If wdith or height of the image is bigger than 'size',
+    // scale image to make its dimensions <= size
+    let elem = document.createElement('canvas')
+
+    if (event.target.width > size || event.target.height > size) {
+        let scaleFactor = null
+        if (event.target.width >= event.target.height) {
+            scaleFactor = size / event.target.width
+            elem.width = size
+            elem.height = event.target.height * scaleFactor
         } else {
-            elem.width = el.target.width
-            elem.height = el.target.height
+            scaleFactor = size / event.target.height
+            elem.width = event.target.width * scaleFactor
+            elem.height = size
         }
-
-        let ctx = elem.getContext('2d')
-        ctx.drawImage(el.target, 0, 0, elem.width, elem.height)
-
-        let srcEncoded = ctx.canvas.toDataURL(el.target, 'image/jpeg', 0)
-
-        document.querySelector('#result').src = srcEncoded
+    } else {
+        elem.width = event.target.width
+        elem.height = event.target.height
     }
+
+    let ctx = elem.getContext('2d')
+    ctx.drawImage(event.target, 0, 0, elem.width, elem.height)
+
+    return ctx.canvas.toDataURL(event.target, 'image/jpeg', 0)
 }

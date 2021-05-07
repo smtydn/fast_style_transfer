@@ -27,7 +27,7 @@
 				</div>
 				<div class="row">
 					<div class="col text-center">
-						<img src="{{ url_for('static', filename=image) }}" class="img-fluid img-thumbnail shadow mt-3 mb-4" id="result" onload="loadResult()">
+						<img src="{{ url_for('static', filename=image) }}" class="img-fluid img-thumbnail shadow mt-3 mb-4" id="result" onload="loadGeneratedImage()">
 					</div>
 				</div>
 					<div class="row">
@@ -55,7 +55,7 @@
 							<label for="uploader">
 								<img id="loadedImage" class="img-fluid img-thumbnail shadow" src="{{ url_for('static', filename='images/800x600.png') }}">
 							</label>
-							<input type="file" style="display:none" accept="image/*" class="custom-file-input filestyle" id="uploader" name="uploader" data-ButtonText="Dosya Ara" onchange="loadImage()">
+							<input type="file" style="display:none" accept="image/*" class="custom-file-input filestyle" id="uploader" name="uploader" data-ButtonText="Dosya Ara" onchange="loadContentImage()">
 						</div>
 					</div>
 					<div class="row">
