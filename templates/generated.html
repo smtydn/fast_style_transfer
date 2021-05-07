@@ -20,18 +20,25 @@
 		<div class="card-body p-5">
 			<div class="container shadow border border-info rounded">
 				{% if image %}
-				<div class="row text-center">
-					<img src="{{ url_for('static', filename=image) }}" class="img-fluid img-thumbnail" id="result" onload="loadResult()">
+				<div class="row">
+					<div class="col text-center">
+						<h3 class="fw-light mt-5 mb-4">İşte görüntün!</h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col text-center">
+						<img src="{{ url_for('static', filename=image) }}" class="img-fluid img-thumbnail shadow mt-3 mb-4" id="result" onload="loadResult()">
+					</div>
 				</div>
 					<div class="row">
-						<div class="col-sm-6 text-center">
+						<div class="col-sm-6 text-right mb-3">
 							<a href="{{ url_for('static', filename=image) }}" download="generated.png">
-								<label class="btn btn-primary">Görüntüyü kaydet!</label>
+								<label class="btn btn-warning btn-lg shadow">Görüntüyü kaydet!</label>
 							</a>
 						</div>
-						<div class="col-sm-6 text-center">
+						<div class="col-sm-6 text-left mb-3">
 							<a href="/">
-								<label class="btn btn-primary">Ana sayfaya dön!</label>
+								<label class="btn btn-warning btn-lg shadow">Ana sayfaya dön!</label>
 							</a>
 						</div>
 					</div>
